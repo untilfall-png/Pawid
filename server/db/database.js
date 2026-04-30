@@ -2,7 +2,8 @@ const initSqlJs = require('sql.js')
 const path     = require('path')
 const fs       = require('fs')
 
-const DB_PATH = path.join(__dirname, '..', 'pawid.db')
+const DATA_DIR = process.env.DATA_DIR || path.join(__dirname, '..')
+const DB_PATH  = path.join(DATA_DIR, 'pawid.db')
 let _rawDb          = null  // sql.js Database instance
 let _wrapper        = null  // better-sqlite3-compatible wrapper
 let _inTransaction  = false // guard: don't save mid-transaction
