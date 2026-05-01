@@ -38,7 +38,7 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `${process.env.SERVER_URL || 'http://localhost:3001'}/api/auth/google/callback`,
+      callbackURL: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/api/auth/google/callback`,
     },
     (accessToken, refreshToken, profile, done) => {
       try {
@@ -59,7 +59,7 @@ if (process.env.GITHUB_CLIENT_ID && process.env.GITHUB_CLIENT_SECRET) {
     {
       clientID: process.env.GITHUB_CLIENT_ID,
       clientSecret: process.env.GITHUB_CLIENT_SECRET,
-      callbackURL: `${process.env.SERVER_URL || 'http://localhost:3001'}/api/auth/github/callback`,
+      callbackURL: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/api/auth/github/callback`,
       scope: ['user:email'],
     },
     (accessToken, refreshToken, profile, done) => {
