@@ -161,7 +161,7 @@ function CuidadorCard({ c, theme }) {
   )
 }
 
-export default function CuidadoresPage() {
+export default function CuidadoresPage({ embedded = false }) {
   const { currentTheme } = usePets()
   const theme = usePetTheme(currentTheme)
 
@@ -185,12 +185,9 @@ export default function CuidadoresPage() {
     return true
   }), [activeServices, activeSpecies, maxPrice, minRating, onlyAvailable])
 
-  return (
-    <div style={{ minHeight:'100vh', paddingTop:100, paddingBottom:80, background:'var(--color-bg)' }}>
-      <div style={{ position:'fixed', inset:0, pointerEvents:'none', background:`radial-gradient(ellipse at 60% 20%, ${theme.glow} 0%, transparent 55%)` }} />
-
-      <div className="relative z-10 max-w-7xl mx-auto px-6">
-        {/* Header */}
+  const inner = (
+    <div className={embedded ? '' : 'relative z-10 max-w-7xl mx-auto px-6'}>
+      {!embedded && (
         <motion.div initial={{ opacity:0, y:-16 }} animate={{ opacity:1, y:0 }} className="mb-10">
           <span className="section-eyebrow">Red de Cuidadores</span>
           <h1 style={{ fontFamily:'var(--font-display)', fontSize:'clamp(28px,4vw,52px)', fontWeight:900, letterSpacing:-1, marginBottom:12 }}>
@@ -201,6 +198,7 @@ export default function CuidadoresPage() {
             {CUIDADORES.length} cuidadores verificados · {CUIDADORES.filter(c => c.available).length} disponibles ahora
           </p>
         </motion.div>
+      )}
 
         <div className="flex gap-6 flex-col lg:flex-row">
           {/* ── FILTERS SIDEBAR ── */}
@@ -320,6 +318,14 @@ export default function CuidadoresPage() {
           </div>
         </div>
       </div>
+  )
+
+  if (embedded) return <div style={{ paddingBottom:40 }}>{inner}</div>
+
+  return (
+    <div style={{ minHeight:'100vh', paddingTop:100, paddingBottom:80, background:'var(--color-bg)' }}>
+      <div style={{ position:'fixed', inset:0, pointerEvents:'none', background:`radial-gradient(ellipse at 60% 20%, ${theme.glow} 0%, transparent 55%)` }} />
+      {inner}
     </div>
   )
 }

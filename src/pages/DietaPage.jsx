@@ -42,7 +42,6 @@ function calcDiet(species, weight, age, activity) {
   const kcalPerDay = Math.round(data.kcalPerKg * weightNum * actMult * ageMult)
   const portionsPerDay = species === 'dog' || species === 'cat' ? 2 : species === 'rabbit' ? 3 : 1
   const gramsPerPortion = Math.round((kcalPerDay / portionsPerDay) / 3.5)
-
   return { kcalPerDay, portionsPerDay, gramsPerPortion, recommended: data.recommended, prohibited: data.prohibited }
 }
 
@@ -85,7 +84,6 @@ function ExercisePlan({ species, activity }) {
       <p style={{ fontFamily:'var(--font-body)', color:'var(--color-muted)' }}>Consulta con tu veterinario para un plan específico.</p>
     </div>
   )
-
   return (
     <div className="glass-dark rounded-2xl p-5">
       <h4 style={{ fontFamily:'var(--font-sub)', fontWeight:700, fontSize:15, marginBottom:16, display:'flex', alignItems:'center', gap:8 }}>
@@ -109,7 +107,7 @@ function ExercisePlan({ species, activity }) {
   )
 }
 
-export default function DietaPage() {
+export default function DietaPage({ embedded = false }) {
   const { pets, activePetId } = usePets()
   const pet = pets.find(p => p.id === activePetId) || pets[0]
   const theme = usePetTheme(pet?.species || 'other')
@@ -126,12 +124,149 @@ export default function DietaPage() {
   const handleCalculate = () => setShowResults(true)
   const handleReset = () => setShowResults(false)
 
+  const body = (
+    <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
+      {/* Form */}
+      <div className="lg:col-span-2">
+        <div className="glass-dark rounded-2xl p-6 space-y-5 sticky top-24">
+          <h3 style={{ fontFamily:'var(--font-sub)', fontWeight:700, fontSize:16, display:'flex', alignItems:'center', gap:8 }}>
+            <Calculator size={16} style={{ color:'var(--gold)' }} />
+            <span style={{ background:'var(--grad-fire)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>Calculadora de dieta</span>
+          </h3>
+
+          <div>
+            <label style={{ fontFamily:'var(--font-sub)', fontSize:12, color:'var(--color-muted)', textTransform:'uppercase', letterSpacing:1, display:'block', marginBottom:8 }}>Especie</label>
+            <div className="grid grid-cols-3 gap-2">
+              {SPECIES_LIST.map(s => (
+                <button key={s.key} onClick={() => { setSpecies(s.key); setShowResults(false) }}
+                  className="species-btn"
+                  style={{ padding:'10px 6px', borderColor: species===s.key ? 'var(--pet-primary)' : 'rgba(255,255,255,0.1)', background: species===s.key ? 'rgba(124,58,237,0.15)' : 'rgba(255,255,255,0.04)' }}>
+                  <span style={{ fontSize:22 }}>{s.emoji}</span>
+                  <span style={{ fontSize:11 }}>{s.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label style={{ fontFamily:'var(--font-sub)', fontSize:12, color:'var(--color-muted)', textTransform:'uppercase', letterSpacing:1, display:'block', marginBottom:8 }}>
+              Peso: <strong style={{ color:'var(--color-text)' }}>{weight} kg</strong>
+            </label>
+            <input type="range" min={0.1} max={100} step={0.5} value={weight}
+              onChange={e => { setWeight(+e.target.value); setShowResults(false) }}
+              style={{ width:'100%', accentColor:'var(--pet-primary)' }} />
+          </div>
+
+          <div>
+            <label style={{ fontFamily:'var(--font-sub)', fontSize:12, color:'var(--color-muted)', textTransform:'uppercase', letterSpacing:1, display:'block', marginBottom:8 }}>Edad (años)</label>
+            <input type="number" min={0} max={30} step={0.5} className="input-styled" value={age}
+              onChange={e => { setAge(e.target.value); setShowResults(false) }} />
+          </div>
+
+          <div>
+            <label style={{ fontFamily:'var(--font-sub)', fontSize:12, color:'var(--color-muted)', textTransform:'uppercase', letterSpacing:1, display:'block', marginBottom:8 }}>Nivel de actividad</label>
+            <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
+              {ACTIVITY_LEVELS.map(a => (
+                <button key={a.key} onClick={() => { setActivity(a.key); setShowResults(false) }}
+                  style={{
+                    display:'flex', alignItems:'center', gap:10, padding:'10px 14px', borderRadius:12, cursor:'pointer',
+                    border:`1px solid ${activity===a.key ? 'var(--pet-primary)' : 'rgba(255,255,255,0.1)'}`,
+                    background: activity===a.key ? 'rgba(124,58,237,0.15)' : 'transparent',
+                    color:'var(--color-text)', fontFamily:'var(--font-sub)', fontSize:13, textAlign:'left',
+                  }}>
+                  <span style={{ fontSize:18 }}>{a.emoji}</span>
+                  <div>
+                    <div style={{ fontWeight:600 }}>{a.label}</div>
+                    <div style={{ fontSize:11, color:'var(--color-muted)', marginTop:1 }}>{a.desc}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button className="btn-primary w-full justify-center" style={{ width:'100%' }} onClick={handleCalculate}>
+            <Calculator size={16} />
+            Calcular plan nutricional
+          </button>
+        </div>
+      </div>
+
+      {/* Results */}
+      <div className="lg:col-span-3 space-y-6">
+        <AnimatePresence>
+          {result && (
+            <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }} className="space-y-6">
+              <div className="grid grid-cols-3 gap-4">
+                {[
+                  { label:'Calorías/día', value:`${result.kcalPerDay} kcal`, emoji:'⚡', grad:'var(--grad-fire)', border:'rgba(255,107,0,0.25)' },
+                  { label:'Porciones/día', value:`${result.portionsPerDay}`, emoji:'🍽️', grad:'var(--grad-cosmic)', border:'rgba(138,43,226,0.25)' },
+                  { label:'Gramos/porción', value:`${result.gramsPerPortion} g`, emoji:'⚖️', grad:'linear-gradient(135deg, #FFB703 0%, #FF8C00 100%)', border:'rgba(255,183,3,0.25)' },
+                ].map(({ label, value, emoji, grad, border }) => (
+                  <motion.div key={label} initial={{ scale:0.8 }} animate={{ scale:1 }}
+                    className="glass rounded-2xl p-4 text-center"
+                    style={{ border:`1px solid ${border}`, boxShadow:`0 0 20px ${border}` }}>
+                    <div style={{ fontSize:28, marginBottom:4 }}>{emoji}</div>
+                    <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:22, background:grad, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>{value}</div>
+                    <div style={{ fontFamily:'var(--font-sub)', fontSize:11, color:'var(--color-muted)', marginTop:2 }}>{label}</div>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="glass-dark rounded-2xl p-5">
+                <h4 style={{ fontFamily:'var(--font-sub)', fontWeight:700, fontSize:15, color:'var(--color-text)', marginBottom:12, display:'flex', alignItems:'center', gap:8 }}>
+                  <CheckCircle size={16} color="#10B981" />
+                  Alimentos recomendados
+                </h4>
+                <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
+                  {result.recommended.map(f => (
+                    <span key={f} style={{ background:'rgba(16,185,129,0.15)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:20, padding:'5px 14px', fontSize:13, color:'#6EE7B7', fontFamily:'var(--font-sub)' }}>
+                      ✅ {f}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              {result.prohibited && <ProhibitedTable items={result.prohibited} />}
+              <ExercisePlan species={species} activity={activity} />
+
+              <button className="btn-ghost btn-sm" onClick={handleReset}>
+                <RefreshCcw size={14} /> Nueva consulta
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {!result && (
+          <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} className="space-y-6">
+            <div className="glass-dark rounded-2xl p-5">
+              <h4 style={{ fontFamily:'var(--font-sub)', fontWeight:700, fontSize:15, color:'var(--color-text)', marginBottom:4 }}>
+                📋 Referencia rápida para {SPECIES_LIST.find(s => s.key === species)?.label || 'tu mascota'}
+              </h4>
+              <p style={{ fontFamily:'var(--font-body)', fontSize:13, color:'var(--color-muted)', marginBottom:16 }}>
+                Completa el formulario y calcula el plan nutricional personalizado.
+              </p>
+              <h5 style={{ fontFamily:'var(--font-sub)', fontWeight:600, fontSize:13, color:'#6EE7B7', marginBottom:10 }}>Alimentos seguros:</h5>
+              <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
+                {(foodData.recommended || []).map(f => (
+                  <span key={f} style={{ background:'rgba(16,185,129,0.12)', border:'1px solid rgba(16,185,129,0.25)', borderRadius:20, padding:'4px 12px', fontSize:12, color:'#6EE7B7', fontFamily:'var(--font-sub)' }}>✅ {f}</span>
+                ))}
+              </div>
+            </div>
+            {foodData.prohibited && <ProhibitedTable items={foodData.prohibited} />}
+          </motion.div>
+        )}
+      </div>
+    </div>
+  )
+
+  if (embedded) {
+    return <div style={{ paddingBottom:40 }}>{body}</div>
+  }
+
   return (
     <div style={{ minHeight:'100vh', paddingTop:100, paddingBottom:80, background:'var(--color-bg)' }}>
       <div style={{ position:'fixed', inset:0, pointerEvents:'none', background:`radial-gradient(ellipse at 30% 30%, ${theme.glow} 0%, transparent 50%)` }} />
-
       <div className="relative z-10 max-w-6xl mx-auto px-6">
-        {/* Header */}
         <motion.div initial={{ opacity:0, y:-16 }} animate={{ opacity:1, y:0 }} className="mb-10">
           <span className="section-eyebrow">Salud & Nutrición</span>
           <h1 style={{ fontFamily:'var(--font-display)', fontSize:'clamp(28px,4vw,52px)', fontWeight:900, letterSpacing:-1, marginBottom:12 }}>
@@ -142,149 +277,7 @@ export default function DietaPage() {
             Plan nutricional personalizado según especie, raza, edad y nivel de actividad de tu mascota.
           </p>
         </motion.div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
-          {/* Form */}
-          <div className="lg:col-span-2">
-            <div className="glass-dark rounded-2xl p-6 space-y-5 sticky top-24">
-              <h3 style={{ fontFamily:'var(--font-sub)', fontWeight:700, fontSize:16, display:'flex', alignItems:'center', gap:8 }}>
-                <Calculator size={16} style={{ color:'var(--gold)' }} />
-                <span style={{ background:'var(--grad-fire)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>Calculadora de dieta</span>
-              </h3>
-
-              {/* Species */}
-              <div>
-                <label style={{ fontFamily:'var(--font-sub)', fontSize:12, color:'var(--color-muted)', textTransform:'uppercase', letterSpacing:1, display:'block', marginBottom:8 }}>Especie</label>
-                <div className="grid grid-cols-3 gap-2">
-                  {SPECIES_LIST.map(s => (
-                    <button key={s.key} onClick={() => { setSpecies(s.key); setShowResults(false) }}
-                      className="species-btn"
-                      style={{ padding:'10px 6px', borderColor: species===s.key ? 'var(--pet-primary)' : 'rgba(255,255,255,0.1)', background: species===s.key ? 'rgba(124,58,237,0.15)' : 'rgba(255,255,255,0.04)' }}>
-                      <span style={{ fontSize:22 }}>{s.emoji}</span>
-                      <span style={{ fontSize:11 }}>{s.label}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Weight */}
-              <div>
-                <label style={{ fontFamily:'var(--font-sub)', fontSize:12, color:'var(--color-muted)', textTransform:'uppercase', letterSpacing:1, display:'block', marginBottom:8 }}>
-                  Peso: <strong style={{ color:'var(--color-text)' }}>{weight} kg</strong>
-                </label>
-                <input type="range" min={0.1} max={100} step={0.5} value={weight}
-                  onChange={e => { setWeight(+e.target.value); setShowResults(false) }}
-                  style={{ width:'100%', accentColor:'var(--pet-primary)' }} />
-              </div>
-
-              {/* Age */}
-              <div>
-                <label style={{ fontFamily:'var(--font-sub)', fontSize:12, color:'var(--color-muted)', textTransform:'uppercase', letterSpacing:1, display:'block', marginBottom:8 }}>Edad (años)</label>
-                <input type="number" min={0} max={30} step={0.5} className="input-styled" value={age}
-                  onChange={e => { setAge(e.target.value); setShowResults(false) }} />
-              </div>
-
-              {/* Activity */}
-              <div>
-                <label style={{ fontFamily:'var(--font-sub)', fontSize:12, color:'var(--color-muted)', textTransform:'uppercase', letterSpacing:1, display:'block', marginBottom:8 }}>Nivel de actividad</label>
-                <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
-                  {ACTIVITY_LEVELS.map(a => (
-                    <button key={a.key} onClick={() => { setActivity(a.key); setShowResults(false) }}
-                      style={{
-                        display:'flex', alignItems:'center', gap:10, padding:'10px 14px', borderRadius:12, cursor:'pointer',
-                        border:`1px solid ${activity===a.key ? 'var(--pet-primary)' : 'rgba(255,255,255,0.1)'}`,
-                        background: activity===a.key ? 'rgba(124,58,237,0.15)' : 'transparent',
-                        color:'var(--color-text)', fontFamily:'var(--font-sub)', fontSize:13, textAlign:'left',
-                      }}>
-                      <span style={{ fontSize:18 }}>{a.emoji}</span>
-                      <div>
-                        <div style={{ fontWeight:600 }}>{a.label}</div>
-                        <div style={{ fontSize:11, color:'var(--color-muted)', marginTop:1 }}>{a.desc}</div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <button className="btn-primary w-full justify-center" style={{ width:'100%' }} onClick={handleCalculate}>
-                <Calculator size={16} />
-                Calcular plan nutricional
-              </button>
-            </div>
-          </div>
-
-          {/* Results */}
-          <div className="lg:col-span-3 space-y-6">
-            <AnimatePresence>
-              {result && (
-                <motion.div initial={{ opacity:0, y:20 }} animate={{ opacity:1, y:0 }} exit={{ opacity:0 }} className="space-y-6">
-                  {/* Kcal cards */}
-                  <div className="grid grid-cols-3 gap-4">
-                    {[
-                      { label:'Calorías/día', value:`${result.kcalPerDay} kcal`, emoji:'⚡', grad:'var(--grad-fire)', border:'rgba(255,107,0,0.25)' },
-                      { label:'Porciones/día', value:`${result.portionsPerDay}`, emoji:'🍽️', grad:'var(--grad-cosmic)', border:'rgba(138,43,226,0.25)' },
-                      { label:'Gramos/porción', value:`${result.gramsPerPortion} g`, emoji:'⚖️', grad:'linear-gradient(135deg, #FFB703 0%, #FF8C00 100%)', border:'rgba(255,183,3,0.25)' },
-                    ].map(({ label, value, emoji, grad, border }) => (
-                      <motion.div key={label} initial={{ scale:0.8 }} animate={{ scale:1 }}
-                        className="glass rounded-2xl p-4 text-center"
-                        style={{ border:`1px solid ${border}`, boxShadow:`0 0 20px ${border}` }}>
-                        <div style={{ fontSize:28, marginBottom:4 }}>{emoji}</div>
-                        <div style={{ fontFamily:'var(--font-display)', fontWeight:800, fontSize:22, background:grad, WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', backgroundClip:'text' }}>{value}</div>
-                        <div style={{ fontFamily:'var(--font-sub)', fontSize:11, color:'var(--color-muted)', marginTop:2 }}>{label}</div>
-                      </motion.div>
-                    ))}
-                  </div>
-
-                  {/* Recommended */}
-                  <div className="glass-dark rounded-2xl p-5">
-                    <h4 style={{ fontFamily:'var(--font-sub)', fontWeight:700, fontSize:15, color:'var(--color-text)', marginBottom:12, display:'flex', alignItems:'center', gap:8 }}>
-                      <CheckCircle size={16} color="#10B981" />
-                      Alimentos recomendados
-                    </h4>
-                    <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
-                      {result.recommended.map(f => (
-                        <span key={f} style={{ background:'rgba(16,185,129,0.15)', border:'1px solid rgba(16,185,129,0.3)', borderRadius:20, padding:'5px 14px', fontSize:13, color:'#6EE7B7', fontFamily:'var(--font-sub)' }}>
-                          ✅ {f}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Prohibited */}
-                  {result.prohibited && <ProhibitedTable items={result.prohibited} />}
-
-                  {/* Exercise plan */}
-                  <ExercisePlan species={species} activity={activity} />
-
-                  <button className="btn-ghost btn-sm" onClick={handleReset}>
-                    <RefreshCcw size={14} /> Nueva consulta
-                  </button>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {/* Default: show prohibited table for selected species */}
-            {!result && (
-              <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} className="space-y-6">
-                <div className="glass-dark rounded-2xl p-5">
-                  <h4 style={{ fontFamily:'var(--font-sub)', fontWeight:700, fontSize:15, color:'var(--color-text)', marginBottom:4 }}>
-                    📋 Referencia rápida para {SPECIES_LIST.find(s => s.key === species)?.label || 'tu mascota'}
-                  </h4>
-                  <p style={{ fontFamily:'var(--font-body)', fontSize:13, color:'var(--color-muted)', marginBottom:16 }}>
-                    Completa el formulario y calcula el plan nutricional personalizado.
-                  </p>
-                  <h5 style={{ fontFamily:'var(--font-sub)', fontWeight:600, fontSize:13, color:'#6EE7B7', marginBottom:10 }}>Alimentos seguros:</h5>
-                  <div style={{ display:'flex', flexWrap:'wrap', gap:6 }}>
-                    {(foodData.recommended || []).map(f => (
-                      <span key={f} style={{ background:'rgba(16,185,129,0.12)', border:'1px solid rgba(16,185,129,0.25)', borderRadius:20, padding:'4px 12px', fontSize:12, color:'#6EE7B7', fontFamily:'var(--font-sub)' }}>✅ {f}</span>
-                    ))}
-                  </div>
-                </div>
-                {foodData.prohibited && <ProhibitedTable items={foodData.prohibited} />}
-              </motion.div>
-            )}
-          </div>
-        </div>
+        {body}
       </div>
     </div>
   )

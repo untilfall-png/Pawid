@@ -71,10 +71,10 @@ function AnimatedRoutes() {
             <Route path="/cedula"      element={<ProtectedRoute><CedulaPage /></ProtectedRoute>} />
             <Route path="/cedula/:id"  element={<ProtectedRoute><CedulaPage /></ProtectedRoute>} />
             <Route path="/dashboard"   element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
-            <Route path="/cuidadores"  element={<ProtectedRoute><CuidadoresPage /></ProtectedRoute>} />
-            <Route path="/rutas"       element={<ProtectedRoute><RutasPage /></ProtectedRoute>} />
-            <Route path="/dieta"       element={<ProtectedRoute><DietaPage /></ProtectedRoute>} />
-            <Route path="/veterinario" element={<ProtectedRoute><VetChatPage /></ProtectedRoute>} />
+            <Route path="/cuidadores"  element={<Navigate to="/dashboard" replace />} />
+            <Route path="/rutas"       element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dieta"       element={<Navigate to="/dashboard" replace />} />
+            <Route path="/veterinario" element={<Navigate to="/dashboard" replace />} />
             <Route path="/bienvenida"  element={<ProtectedRoute><WelcomeVideoPage /></ProtectedRoute>} />
 
             <Route path="*" element={

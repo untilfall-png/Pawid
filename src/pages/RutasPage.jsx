@@ -169,7 +169,7 @@ function SitioCard({ s }) {
   )
 }
 
-export default function RutasPage() {
+export default function RutasPage({ embedded = false }) {
   const { currentTheme } = usePets()
   const theme = usePetTheme(currentTheme)
   const [activeTab, setActiveTab] = useState('rutas')
@@ -181,12 +181,9 @@ export default function RutasPage() {
 
   const siteTypes = [...new Set(SITIOS.map(s => s.type))]
 
-  return (
-    <div style={{ minHeight:'100vh', paddingTop:100, paddingBottom:80, background:'var(--color-bg)' }}>
-      <div style={{ position:'fixed', inset:0, pointerEvents:'none', background:`radial-gradient(ellipse at 50% 20%, ${theme.glow} 0%, transparent 55%)` }} />
-
-      <div className="relative z-10 max-w-7xl mx-auto px-6">
-        {/* Header */}
+  const inner = (
+    <div className={embedded ? '' : 'relative z-10 max-w-7xl mx-auto px-6'}>
+      {!embedded && (
         <motion.div initial={{ opacity:0, y:-16 }} animate={{ opacity:1, y:0 }} className="mb-8">
           <span className="section-eyebrow">Aventura Juntos</span>
           <h1 style={{ fontFamily:'var(--font-display)', fontSize:'clamp(28px,4vw,52px)', fontWeight:900, letterSpacing:-1, marginBottom:12 }}>
@@ -198,6 +195,7 @@ export default function RutasPage() {
             Chile tiene paisajes increíbles para explorar con tu mascota. Rutas de trekking, playas y sitios pet-friendly verificados.
           </p>
         </motion.div>
+      )}
 
         {/* Tab switcher */}
         <div style={{ display:'flex', gap:0, borderBottom:'1px solid rgba(255,255,255,0.1)', marginBottom:28 }}>
@@ -269,6 +267,14 @@ export default function RutasPage() {
           )}
         </AnimatePresence>
       </div>
+  )
+
+  if (embedded) return <div style={{ paddingBottom:40 }}>{inner}</div>
+
+  return (
+    <div style={{ minHeight:'100vh', paddingTop:100, paddingBottom:80, background:'var(--color-bg)' }}>
+      <div style={{ position:'fixed', inset:0, pointerEvents:'none', background:`radial-gradient(ellipse at 50% 20%, ${theme.glow} 0%, transparent 55%)` }} />
+      {inner}
     </div>
   )
 }

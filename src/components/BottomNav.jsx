@@ -1,14 +1,14 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Home, Map, Plus, Users, Stethoscope } from 'lucide-react'
+import { Home, LayoutDashboard, Plus, Map, Stethoscope } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
 
 const ITEMS = [
-  { label: 'Inicio',      path: '/',            icon: Home },
-  { label: 'Rutas',       path: '/rutas',       icon: Map },
-  { label: null,          path: '/crear',       icon: Plus }, // CTA central
-  { label: 'Cuidadores',  path: '/cuidadores',  icon: Users },
-  { label: 'Dr. Patitas', path: '/veterinario', icon: Stethoscope },
+  { label: 'Inicio',     path: '/',          icon: Home },
+  { label: 'Dashboard',  path: '/dashboard', icon: LayoutDashboard },
+  { label: null,         path: '/crear',     icon: Plus },
+  { label: 'Rutas',      path: '/dashboard', icon: Map },
+  { label: 'Dr.Patitas', path: '/dashboard', icon: Stethoscope },
 ]
 
 export default function BottomNav() {
@@ -30,14 +30,14 @@ export default function BottomNav() {
         paddingBottom: 'max(8px, env(safe-area-inset-bottom))',
       }}
     >
-      {ITEMS.map(({ label, path, icon: Icon }) => {
+      {ITEMS.map(({ label, path, icon: Icon }, idx) => {
         const isCTA = label === null
-        const active = !isCTA && (location.pathname === path || (path !== '/' && location.pathname.startsWith(path)))
+        const active = !isCTA && location.pathname === path
 
         if (isCTA) {
-          const ctaDest = isAuthenticated ? path : '/login'
+          const dest = isAuthenticated ? path : '/login'
           return (
-            <button key={path} onClick={() => navigate(ctaDest)}
+            <button key={idx} onClick={() => navigate(dest)}
               style={{
                 width: 52, height: 52, borderRadius: '50%',
                 background: 'var(--grad-fire)',
@@ -54,7 +54,7 @@ export default function BottomNav() {
         }
 
         return (
-          <Link key={path} to={path}
+          <Link key={idx} to={path}
             style={{
               display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3,
               textDecoration: 'none', padding: '4px 10px', borderRadius: 12,

@@ -24,7 +24,22 @@ const SPECIES = [
 ]
 
 const BREEDS = {
-  dog: ['Labrador Retriever', 'Golden Retriever', 'Pastor Alemán', 'Bulldog Francés', 'Poodle', 'Chihuahua', 'Beagle', 'Boxer', 'Husky Siberiano', 'Shih Tzu', 'Mestizo'],
+  dog: [
+    'Labrador Retriever', 'Golden Retriever', 'Pastor Alemán', 'Bulldog Francés',
+    'Poodle', 'Chihuahua', 'Beagle', 'Boxer', 'Husky Siberiano', 'Shih Tzu',
+    'American Pit Bull Terrier', 'Rottweiler', 'Doberman Pinscher', 'Schnauzer Miniatura',
+    'Schnauzer Gigante', 'Border Collie', 'Dálmata', 'Gran Danés', 'Cocker Spaniel',
+    'Pomerania', 'Bichón Frisé', 'Shar Pei', 'Akita', 'Bulldog Inglés',
+    'Pastor Australiano', 'Samoyedo', 'Chow Chow', 'Weimaraner',
+    'Basset Hound', 'Dachshund', 'Maltés', 'Yorkshire Terrier',
+    'Shiba Inu', 'Corgi (Pembroke)', 'Mastín Napolitano', 'Bullmastiff',
+    'Staffordshire Bull Terrier', 'American Staffordshire Terrier',
+    'Setter Irlandés', 'Springer Spaniel', 'Pinscher Miniatura',
+    'Jack Russell Terrier', 'West Highland White Terrier', 'Bóxer',
+    'Rhodesian Ridgeback', 'Alaskan Malamute', 'San Bernardo',
+    'Dogo Argentino', 'Fila Brasileño', 'Caniche Toy', 'Bichón Maltés',
+    'Mestizo',
+  ],
   cat: ['Persa', 'Siamés', 'Maine Coon', 'Ragdoll', 'Bengalí', 'Sphynx', 'British Shorthair', 'Abisinio', 'Mestizo'],
   rabbit: ['Holandés', 'Mini Rex', 'Lionhead', 'Angora', 'Californiano', 'Mestizo'],
   bird: ['Canario', 'Periquito', 'Agaporni', 'Ninfa', 'Loro Gris', 'Amazona', 'Cacatúa'],
@@ -46,6 +61,7 @@ const PHYSIO = [
 const COLORS = [
   '#7C3AED','#F59E0B','#EF4444','#10B981','#3B82F6','#EC4899',
   '#F97316','#14B8A6','#8B5CF6','#F3F4F6','#374151','#92400E',
+  'multicolor',
 ]
 
 const STEPS = ['Identidad', 'Datos Físicos', 'Historial Médico', 'Confirmación']
@@ -155,15 +171,21 @@ function Step1({ data, onChange, theme }) {
               key={c}
               type="button"
               onClick={() => onChange('color', c)}
+              title={c === 'multicolor' ? 'Multicolor / Mixto' : c}
               style={{
                 width: 32, height: 32, borderRadius: '50%',
-                background: c,
+                background: c === 'multicolor'
+                  ? 'conic-gradient(from 0deg, #ff6a00, #ffd700, #7fff00, #00bfff, #8a2be2, #ff2d8c, #ff6a00)'
+                  : c,
                 border: data.color === c ? '3px solid white' : '2px solid rgba(255,255,255,0.2)',
                 cursor: 'pointer',
                 transition: 'transform 0.15s',
                 transform: data.color === c ? 'scale(1.2)' : 'scale(1)',
+                fontSize: c === 'multicolor' ? 14 : undefined,
               }}
-            />
+            >
+              {c === 'multicolor' ? '' : null}
+            </button>
           ))}
           <input
             type="color"

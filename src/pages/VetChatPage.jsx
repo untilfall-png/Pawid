@@ -559,7 +559,7 @@ const WELCOME = {
   chips: ['¿Qué puede comer mi perro? 🐕','¿Cuándo vacunar? 💉','¡Dato curioso! ✨','Ver todos los temas 📋'],
 }
 
-export default function VetChatPage() {
+export default function VetChatPage({ embedded = false }) {
   const [messages, setMessages] = useState([WELCOME])
   const [input, setInput]       = useState('')
   const [typing, setTyping]     = useState(false)
@@ -608,17 +608,10 @@ export default function VetChatPage() {
     ))
   }, [])
 
-  return (
-    <div style={{ minHeight:'100vh', paddingTop:80, paddingBottom:0, background:'var(--color-bg)', display:'flex', flexDirection:'column' }}>
-      {/* Ambient */}
-      <div style={{ position:'fixed', inset:0, pointerEvents:'none', background:'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(138,43,226,0.1) 0%, transparent 60%)' }} />
-      <div style={{ position:'fixed', bottom:0, right:0, width:400, height:400, borderRadius:'50%', background:'radial-gradient(circle, rgba(255,107,0,0.07) 0%, transparent 70%)', pointerEvents:'none' }} />
-      {/* Logo decorativa */}
-      <img src="/pawid-logo.png" alt="" aria-hidden="true"
-        style={{ position:'fixed', bottom:-40, right:-40, width:320, height:320, objectFit:'contain', opacity:0.06, pointerEvents:'none', userSelect:'none', filter:'blur(2px)' }}
-      />
+  const chatMaxHeight = embedded ? '420px' : 'calc(100vh - 320px)'
 
-      <div className="relative z-10 max-w-3xl mx-auto w-full px-4 flex flex-col" style={{ flex:1, paddingBottom:0 }}>
+  const chatUI = (
+      <div style={{ maxWidth: embedded ? '100%' : 768, margin:'0 auto', width:'100%', padding: embedded ? 0 : '0 16px', flex:1, display:'flex', flexDirection:'column' }}>
         {/* Header */}
         <motion.div initial={{ opacity:0, y:-16 }} animate={{ opacity:1, y:0 }}
           style={{ paddingTop:20, paddingBottom:16, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
@@ -671,7 +664,7 @@ export default function VetChatPage() {
         </motion.div>
 
         {/* Chat area */}
-        <div style={{ flex:1, overflowY:'auto', display:'flex', flexDirection:'column', gap:16, paddingBottom:16, minHeight:0, maxHeight:'calc(100vh - 320px)' }}
+        <div style={{ flex:1, overflowY:'auto', display:'flex', flexDirection:'column', gap:16, paddingBottom:16, minHeight:0, maxHeight:chatMaxHeight }}
           className="chat-scroll">
           {messages.map(msg =>
             msg.type === 'bot'
@@ -722,6 +715,26 @@ export default function VetChatPage() {
             🐾 Dr. Patitas no reemplaza la consulta con un veterinario profesional
           </p>
         </div>
+      </div>
+  )
+
+  if (embedded) {
+    return (
+      <div style={{ display:'flex', flexDirection:'column', paddingBottom:20 }}>
+        {chatUI}
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ minHeight:'100vh', paddingTop:80, paddingBottom:0, background:'var(--color-bg)', display:'flex', flexDirection:'column' }}>
+      <div style={{ position:'fixed', inset:0, pointerEvents:'none', background:'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(138,43,226,0.1) 0%, transparent 60%)' }} />
+      <div style={{ position:'fixed', bottom:0, right:0, width:400, height:400, borderRadius:'50%', background:'radial-gradient(circle, rgba(255,107,0,0.07) 0%, transparent 70%)', pointerEvents:'none' }} />
+      <img src="/pawid-logo.png" alt="" aria-hidden="true"
+        style={{ position:'fixed', bottom:-40, right:-40, width:320, height:320, objectFit:'contain', opacity:0.06, pointerEvents:'none', userSelect:'none', filter:'blur(2px)' }}
+      />
+      <div className="relative z-10" style={{ flex:1, display:'flex', flexDirection:'column', paddingBottom:0 }}>
+        {chatUI}
       </div>
     </div>
   )
